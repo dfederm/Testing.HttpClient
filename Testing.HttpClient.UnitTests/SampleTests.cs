@@ -5,6 +5,7 @@
 namespace Testing.HttpClient.UnitTests
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Net;
     using System.Net.Http;
@@ -32,6 +33,8 @@ namespace Testing.HttpClient.UnitTests
                 // Await the result and assert on it
                 var result = await resultTask;
                 Assert.AreEqual(123, result);
+
+                http.EnsureNoOutstandingRequests();
             }
         }
 
@@ -52,6 +55,8 @@ namespace Testing.HttpClient.UnitTests
 
                 // Let the call finish
                 await resultTask;
+
+                http.EnsureNoOutstandingRequests();
             }
         }
 
@@ -73,6 +78,8 @@ namespace Testing.HttpClient.UnitTests
                 // Await the result and assert on it
                 var result = await resultTask;
                 Assert.AreEqual(6, result);
+
+                http.EnsureNoOutstandingRequests();
             }
         }
 
@@ -94,6 +101,8 @@ namespace Testing.HttpClient.UnitTests
                 // Await the result and assert on it
                 var result = await resultTask;
                 Assert.AreEqual("item 3 subitem 6 data", result);
+
+                http.EnsureNoOutstandingRequests();
             }
         }
 
@@ -105,39 +114,47 @@ namespace Testing.HttpClient.UnitTests
             public Worker(HttpClient httpClient)
             {
                 this.httpClient = httpClient;
+                this.httpClient.BaseAddress = new Uri("http://some-website.com");
             }
 
             public async Task<int> FetchDataAsync()
             {
-                var response = await this.httpClient.GetAsync("http://some-website.com/some-path");
-                response.EnsureSuccessStatusCode();
+                using (var response = await this.httpClient.GetAsync("/some-path"))
+                {
+                    response.EnsureSuccessStatusCode();
 
-                var responseString = await response.Content.ReadAsStringAsync();
-                return int.TryParse(responseString, out var result) ? result : 0;
+                    var responseString = await response.Content.ReadAsStringAsync();
+                    return int.TryParse(responseString, out var result) ? result : 0;
+                }
             }
 
             public async Task PostDataAsync()
             {
-                var response = await this.httpClient.PostAsync("http://some-website.com/some-path", new StringContent("some data"));
-                response.EnsureSuccessStatusCode();
+                using (var response = await this.httpClient.PostAsync("/some-path", new StringContent("some data")))
+                {
+                    response.EnsureSuccessStatusCode();
+                }
             }
 
             public async Task<int> FetchParallelDataAsync()
             {
                 // Make some parallel calls
                 var responses = await Task.WhenAll(
-                    this.httpClient.GetAsync("http://some-website.com/1"),
-                    this.httpClient.GetAsync("http://some-website.com/2"),
-                    this.httpClient.GetAsync("http://some-website.com/3"));
+                    this.httpClient.GetAsync("/1"),
+                    this.httpClient.GetAsync("/2"),
+                    this.httpClient.GetAsync("/3"));
 
                 // Aggregate the results
                 var sum = 0;
                 foreach (var response in responses)
                 {
-                    response.EnsureSuccessStatusCode();
+                    using (response)
+                    {
+                        response.EnsureSuccessStatusCode();
 
-                    var responseString = await response.Content.ReadAsStringAsync();
-                    sum += int.TryParse(responseString, out var result) ? result : 0;
+                        var responseString = await response.Content.ReadAsStringAsync();
+                        sum += int.TryParse(responseString, out var result) ? result : 0;
+                    }
                 }
 
                 return sum;
@@ -145,27 +162,42 @@ namespace Testing.HttpClient.UnitTests
 
             public async Task<string> FetchSequentialDataAsync()
             {
-                this.httpClient.BaseAddress = new Uri("http://some-website.com");
+                // Make the first request
+                IEnumerable<int> items;
+                using (var itemsResponse = await this.httpClient.GetAsync("/items"))
+                {
+                    itemsResponse.EnsureSuccessStatusCode();
+                    var itemsString = await itemsResponse.Content.ReadAsStringAsync();
+                    items = itemsString
+                        .Split(",")
+                        .Select(str => int.TryParse(str, out var i) ? i : 0);
+                }
 
-                var itemsResponse = await this.httpClient.GetAsync("/items");
-                itemsResponse.EnsureSuccessStatusCode();
-                var itemsString = await itemsResponse.Content.ReadAsStringAsync();
-                var items = itemsString
-                    .Split(",")
-                    .Select(str => int.TryParse(str, out var i) ? i : 0);
-
+                // Process the first result. Pretend it may do some async work and take a few cycles
+                await Task.Delay(10);
                 var newestItem = items.Max();
-                var subItemsResponse = await this.httpClient.GetAsync($"/items/{newestItem}/subItems");
-                subItemsResponse.EnsureSuccessStatusCode();
-                var subItemsString = await subItemsResponse.Content.ReadAsStringAsync();
-                var subItems = subItemsString
-                    .Split(",")
-                    .Select(str => int.TryParse(str, out var i) ? i : 0);
 
-                var newestSubItem = subItemsString.Max();
-                var subItemDetailResponse = await this.httpClient.GetAsync($"/items/{newestItem}/subItems/{newestSubItem}");
-                subItemDetailResponse.EnsureSuccessStatusCode();
-                return await subItemDetailResponse.Content.ReadAsStringAsync();
+                // Make a second request which depends on the result of the first
+                IEnumerable<int> subItems;
+                using (var subItemsResponse = await this.httpClient.GetAsync($"/items/{newestItem}/subItems"))
+                {
+                    subItemsResponse.EnsureSuccessStatusCode();
+                    var subItemsString = await subItemsResponse.Content.ReadAsStringAsync();
+                    subItems = subItemsString
+                        .Split(",")
+                        .Select(str => int.TryParse(str, out var i) ? i : 0);
+                }
+
+                // Process the second result. Pretend it may do some async work and take a few cycles
+                await Task.Delay(10);
+                var newestSubItem = subItems.Max();
+
+                // Make a thrid request which depends on the result of the first and second
+                using (var subItemDetailResponse = await this.httpClient.GetAsync($"/items/{newestItem}/subItems/{newestSubItem}"))
+                {
+                    subItemDetailResponse.EnsureSuccessStatusCode();
+                    return await subItemDetailResponse.Content.ReadAsStringAsync();
+                }
             }
         }
     }

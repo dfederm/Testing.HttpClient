@@ -26,6 +26,9 @@ namespace Testing.HttpClient.UnitTests
         public void Dispose() => this.handler.Dispose();
 
         [TestMethod]
+        public void Constructor() => Assert.ThrowsException<ArgumentNullException>(() => new HttpTestingMessageHandler(null));
+
+        [TestMethod]
         public void ExpectThrowsOnUnmatchingRequest() => Assert.ThrowsException<InvalidOperationException>(() => this.handler.Expect(new RequestExpectation(HttpMethod.Get, new Uri("https://www.foo.com"))));
 
         [TestMethod]
@@ -68,7 +71,7 @@ namespace Testing.HttpClient.UnitTests
             using (var httpClient = new HttpClient(this.handler))
             {
                 // Shorten the timeout to make the test faster
-                this.settings.RequestTimeout = TimeSpan.FromSeconds(1);
+                this.settings.RequestTimeout = TimeSpan.FromMilliseconds(100);
 
                 TimeoutException timeoutException = null;
                 try
