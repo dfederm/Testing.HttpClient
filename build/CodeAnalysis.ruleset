@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RuleSet Name="CodeAnalysis" Description=" " ToolsVersion="14.0">
+  <!-- We don't really support proper globalization right now. -->
+  <Rules AnalyzerId="Microsoft.Globalization" RuleNamespace="Microsoft.Globalization">
+    <!-- SpecifyIFormatProvider -->
+    <Rule Id="CA1305" Action="None" />
+    <!-- NormalizeStringsToUppercase -->
+    <Rule Id="CA1308" Action="None" />
+  </Rules>
+
+  <!-- We just use C# so we don't care about other language keywords -->
+  <Rules AnalyzerId="Microsoft.ApiDesignGuidelines.Analyzers" RuleNamespace="Microsoft.ApiDesignGuidelines.Analyzers">
+    <!-- IdentifiersShouldNotMatchKeywords -->
+    <Rule Id="CA1716" Action="None" />
+  </Rules>
+
+  <Rules AnalyzerId="Microsoft.CodeAnalysis.CSharp.Features" RuleNamespace="Microsoft.CodeAnalysis.CSharp.Features">
+    <!-- Conflicts with SA1101. We prefer requiring "this" qualification. -->
+    <Rule Id="IDE0003" Action="None" />
+  </Rules>
+
+</RuleSet>

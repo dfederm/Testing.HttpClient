@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RuleSet Name="CodeAnalysis.UnitTests" Description=" " ToolsVersion="14.0">
+  <!-- Inherit from the main ruleset -->
+  <Include Path="CodeAnalysis.ruleset" Action="Default" />
+
+  <!-- Unit tests don't need these rules -->
+  <Rules AnalyzerId="Microsoft.ApiDesignGuidelines.Analyzers" RuleNamespace="Microsoft.ApiDesignGuidelines.Analyzers">
+    <!-- DoNotDirectlyAwaitATask -->
+    <Rule Id="CA2007" Action="None" /> 
+    <!-- PassSystemUriObjectsInsteadOfStrings -->
+    <Rule Id="CA2234" Action="None" /> 
+  </Rules> 
+
+  <!-- Don't worry about documentation for unit tests -->
+  <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers">
+    <!-- XmlCommentAnalysisDisabled -->
+    <Rule Id="SA0001" Action="None" />
+    <!-- ElementsMustBeDocumented -->
+    <Rule Id="SA1600" Action="None" />
+    <!-- PartialElementsMustBeDocumented -->
+    <Rule Id="SA1601" Action="None" />
+    <!-- EnumerationItemsMustBeDocumented -->
+    <Rule Id="SA1602" Action="None" />
+    <!-- ElementParametersMustBeDocumented -->
+    <Rule Id="SA1611" Action="None" />
+  </Rules>
+
+</RuleSet>

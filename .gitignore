@@ -1,0 +1,17 @@
+﻿# Find common entries here: https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
+
+# Visual Studio cache and user-specific files
+.vs/
+*.*proj.user
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+[Bb]in/
+[Oo]bj/
+
+# MSTest test Results
+[Tt]est[Rr]esult*/
+
+# Visual Studio Publish settings
+PublishProfiles/
