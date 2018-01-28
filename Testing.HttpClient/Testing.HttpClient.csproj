@@ -3,6 +3,19 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <DocumentationFile>$(OutputPath)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+
+    <!-- Nuget information -->
+    <PackageId>$(AssemblyName)</PackageId>
+    <PackageVersion>1.0.0</PackageVersion>
+    <Authors>David Federman</Authors>
+    <Description>Library to help simplify unit testing code which uses the .NET HttpClient</Description>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <Copyright>Copyright (c) David Federman. All rights reserved.</Copyright>
+    <PackageTags>test testing httpclient mock</PackageTags>
+    <PackageProjectUrl>https://github.com/dfederm/Testing.HttpClient</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/dfederm/Testing.HttpClient</RepositoryUrl>
+    <PackageLicenseUrl>https://github.com/dfederm/Testing.HttpClient/blob/master/LICENSE</PackageLicenseUrl>
   </PropertyGroup>
 
 </Project>
