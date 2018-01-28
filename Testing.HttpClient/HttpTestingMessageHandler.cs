@@ -60,7 +60,7 @@ namespace Testing.HttpClient
                 {
                     lock (this.lockObj)
                     {
-                        throw new InvalidOperationException($"Expected request was not matched: [{expectation}]. Outstanding requests: [{this.GetOutstandingRequestsDebugString()}]");
+                        throw new InvalidOperationException($"Expected request was not matched: [{expectation}]. Outstanding requests: [{this.GetOutstandingItemsDebugString(this.outstandingRequests)}]");
                     }
                 }
 
@@ -76,8 +76,8 @@ namespace Testing.HttpClient
                         throw new InvalidOperationException(
                             $"A request matching an outstanding expectation was made, but the request could not be found. This is likely a bug. Please report this to the developer. " +
                             $"Expectation: [{expectation}]; " +
-                            $"Outstanding expectations: [{this.GetOutstandingExpectationsDebugString()}]; " +
-                            $"Outstanding requests: [{this.GetOutstandingRequestsDebugString()}]; ");
+                            $"Outstanding expectations: [{this.GetOutstandingItemsDebugString(this.outstandingExpectations)}]; " +
+                            $"Outstanding requests: [{this.GetOutstandingItemsDebugString(this.outstandingRequests)}]");
                     }
                 }
             }
@@ -92,7 +92,7 @@ namespace Testing.HttpClient
             string outstandingRequestString;
             lock (this.lockObj)
             {
-                outstandingRequestString = this.GetOutstandingRequestsDebugString();
+                outstandingRequestString = this.GetOutstandingItemsDebugString(this.outstandingRequests);
             }
 
             if (outstandingRequestString.Length > 0)
@@ -154,39 +154,12 @@ namespace Testing.HttpClient
         }
 
         // Only call when holding the lock
-        private string GetOutstandingRequestsDebugString()
+        private string GetOutstandingItemsDebugString<T>(Dictionary<RequestExpectation, Queue<T>> items)
         {
             var sb = new StringBuilder();
 
             var isFirst = true;
-            foreach (var pair in this.outstandingRequests)
-            {
-                var num = pair.Value.Count;
-                for (var i = 0; i < num; i++)
-                {
-                    if (!isFirst)
-                    {
-                        sb.Append(", ");
-                    }
-
-                    sb.Append("[");
-                    sb.Append(pair.Key.ToString());
-                    sb.Append("]");
-
-                    isFirst = false;
-                }
-            }
-
-            return sb.ToString();
-        }
-
-        // Only call when holding the lock
-        private string GetOutstandingExpectationsDebugString()
-        {
-            var sb = new StringBuilder();
-
-            var isFirst = true;
-            foreach (var pair in this.outstandingExpectations)
+            foreach (var pair in items)
             {
                 var num = pair.Value.Count;
                 for (var i = 0; i < num; i++)
