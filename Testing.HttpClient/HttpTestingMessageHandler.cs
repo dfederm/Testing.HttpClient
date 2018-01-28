@@ -13,7 +13,7 @@ namespace Testing.HttpClient
 
     internal sealed class HttpTestingMessageHandler : HttpMessageHandler
     {
-        // We need to manage state across multiple collections, so thread-safe colletions won't be enough thread-safety.
+        // We need to manage state across multiple collections, so thread-safe collections won't be enough thread-safety.
         private readonly object lockObj = new object();
 
         private readonly Dictionary<RequestExpectation, Queue<TestRequest>> outstandingRequests;

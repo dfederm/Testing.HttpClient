@@ -94,12 +94,12 @@ namespace Testing.HttpClient
 
             if (this.taskCompletionSource.Task.IsFaulted)
             {
-                throw new InvalidOperationException("This task associated with this request is unexpected faulted.");
+                throw new InvalidOperationException("This task associated with this request is unexpectedly faulted.", this.taskCompletionSource.Task.Exception);
             }
 
             if (this.taskCompletionSource.Task.IsCompleted)
             {
-                throw new InvalidOperationException("This task associated with this request is unexpected already complete.");
+                throw new InvalidOperationException("This task associated with this request is unexpectedly already complete.");
             }
 
             this.taskCompletionSource.SetResult(response);
